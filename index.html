@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WantLess - Frictionless Wishlist</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafafa;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px 0;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    /* Capture input - always visible */
+    .capture {
+      margin-bottom: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fafafa;
+      padding-bottom: 12px;
+    }
+
+    .capture-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+
+    .capture-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .capture-hint {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .tab {
+      padding: 12px 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: #9ca3af;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .tab:hover {
+      color: #6b7280;
+    }
+
+    /* Items list */
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .item {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      transition: all 0.2s;
+    }
+
+    .item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-color: #d1d5db;
+    }
+
+    .item-image {
+      width: 60px;
+      height: 60px;
+      background: #f3f4f6;
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      overflow: hidden;
+    }
+
+    .item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-name {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 4px;
+      color: #1f2937;
+      word-break: break-word;
+    }
+
+    .item-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #9ca3af;
+      flex-wrap: wrap;
+    }
+
+    .item-price {
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    .item-days {
+      color: #d97706;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .item-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #f3f4f6;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .item-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .item-btn.danger:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #9ca3af;
+    }
+
+    .empty p {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    /* Summary */
+    .summary {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .summary strong {
+      color: #1f2937;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 12px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .item {
+        padding: 10px;
+      }
+
+      .item-image {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>WantLess</h1>
+      <p>Capture. Reflect. Decide.</p>
+    </div>
+
+    <!-- Instant capture input -->
+    <div class="capture">
+      <input
+        type="text"
+        class="capture-input"
+        id="captureInput"
+        placeholder="Add anything... (name or paste a link)"
+        autofocus
+      >
+      <div class="capture-hint">Press Enter to save instantly</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-list="inbox">Inbox</button>
+      <button class="tab" data-list="wishlist">Wishlist</button>
+      <button class="tab" data-list="archived">Archived</button>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary" id="summary"></div>
+
+    <!-- Items list -->
+    <div class="items-list" id="itemsList"></div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3026';
+    let currentList = 'inbox';
+
+    // Instant capture
+    document.getElementById('captureInput').addEventListener('keydown', async (e) => {
+      if (e.key !== 'Enter') return;
+      if (!e.target.value.trim()) return;
+
+      const value = e.target.value.trim();
+      e.target.value = '';
+
+      try {
+        const isUrl = value.startsWith('http://') || value.startsWith('https://');
+        const payload = isUrl
+          ? { name: new URL(value).hostname, url: value }
+          : { name: value };
+
+        await fetch(`${API}/api/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        loadItems();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentList = tab.dataset.list;
+        loadItems();
+      });
+    });
+
+    // Load and render items
+    async function loadItems() {
+      try {
+        const url = currentList === 'all'
+          ? `${API}/api/items?listId=all`
+          : currentList === 'archived'
+          ? `${API}/api/items?listId=archived`
+          : `${API}/api/items?listId=${currentList}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        let items = data.items;
+
+        if (currentList === 'archived') {
+          items = items.filter(i => i.archived);
+        } else {
+          items = items.filter(i => !i.archived);
+        }
+
+        // Update summary
+        const summary = document.getElementById('summary');
+        summary.innerHTML = `<strong>${items.length}</strong> item${items.length !== 1 ? 's' : ''} ${currentList === 'inbox' ? 'to review' : 'saved'}`;
+
+        // Render items
+        const list = document.getElementById('itemsList');
+        if (items.length === 0) {
+          list.innerHTML = `
+            <div class="empty">
+              <div class="empty-icon">✨</div>
+              <p>${
+                currentList === 'inbox'
+                  ? 'Your inbox is empty. Add something to get started.'
+                  : currentList === 'wishlist'
+                  ? 'Move items here when you\'re sure you want them.'
+                  : 'No archived items yet.'
+              }</p>
+            </div>
+          `;
+          return;
+        }
+
+        list.innerHTML = items.map(item => `
+          <div class="item">
+            <div class="item-image">
+              ${item.image ? `<img src="${item.image}" alt="">` : '📦'}
+            </div>
+            <div class="item-content">
+              <div class="item-name">${escapeHtml(item.name)}</div>
+              <div class="item-meta">
+                ${item.price ? `<span class="item-price">$${item.price}</span>` : ''}
+                ${item.daysOnWishlist > 0 ? `<span class="item-days">${item.daysOnWishlist} days</span>` : '<span>Just added</span>'}
+              </div>
+            </div>
+            <div class="item-actions">
+              ${currentList === 'inbox' ? `
+                <button class="item-btn" onclick="moveItem(${item.id}, 'wishlist')" title="Save to wishlist">❤️</button>
+              ` : ''}
+              <button class="item-btn" onclick="markPurchased(${item.id})" title="Mark purchased">✓</button>
+              <button class="item-btn danger" onclick="deleteItem(${item.id})" title="Delete">✕</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    async function moveItem(id, listId) {
+      await fetch(`${API}/api/items/${id}/list`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listId })
+      });
+      loadItems();
+    }
+
+    async function markPurchased(id) {
+      await fetch(`${API}/api/items/${id}/purchase`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      loadItems();
+    }
+
+    async function deleteItem(id) {
+      if (!confirm('Delete this item?')) return;
+      await fetch(`${API}/api/items/${id}`, { method: 'DELETE' });
+      loadItems();
+    }
+
+    // Load items on startup
+    loadItems();
+  </script>
+</body>
+</html>
