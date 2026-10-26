@@ -67,3 +67,7 @@ No forms. No questions. No friction.
 - Browser extension for instant capture
 - Mobile app
 
+
+## License
+
+MIT, see [LICENSE](LICENSE).
